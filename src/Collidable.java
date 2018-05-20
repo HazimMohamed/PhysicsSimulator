@@ -1,6 +1,13 @@
-public interface Collidable {
-	public double getMass();
-	public double getCoeficientOfFriction();
-	public void addImpulseForce(Vector2 force);
-	public Vector2 getVelocity();
+public interface Collidable extends Physical{	
+	double getMass();
+	
+	double getCoeficientOfFriction();
+	
+	Vector2 getPreviousPosition();
+	
+	Collider getCollider();
+
+	double getBounciness();
+	
+	boolean isImmobile();
 }

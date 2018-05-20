@@ -5,17 +5,19 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
 public class Driver extends Application{
-	static final double canvasWidth = 800;
+	static final double canvasWidth = 400;
 	static final double canvasHeight = 600;
+	static final double frameRate = 60;
 		
 	private GraphicsContext gc;
-	private Canvas canvas;
 	
+	private Canvas canvas;
+	private UpdateFrame updateFrame;
+		
 	public static void main(String[] args) {
 		Application.launch(args);
 	}
@@ -27,25 +29,10 @@ public class Driver extends Application{
 		Scene theScene = new Scene(canvasGroup);
 				
 		gc = canvas.getGraphicsContext2D();
-		gc.setFill(Color.RED);
 		
-		UpdateFrame updateFrame = new UpdateFrame(this);
-		DragEvent dragEvent = new DragEvent(updateFrame);
+		updateFrame = new UpdateFrame(this);
 		
-		canvas.setOnMousePressed((e) -> {
-			dragEvent.startDragging(e);
-		});
-		
-		canvas.setOnMouseDragged((e) -> {
-			dragEvent.dragAction(e);
-		});
-
-		canvas.setOnMouseReleased((e) -> {
-			dragEvent.stopDragging(e);
-		});
-		
-		
-		KeyFrame updateGame = new KeyFrame(Duration.seconds(1f/60f) , updateFrame);
+		KeyFrame updateGame = new KeyFrame(Duration.seconds(1f/frameRate) , updateFrame);
 		
 		Timeline gameLoop = new Timeline(updateGame);
 		gameLoop.setCycleCount(Timeline.INDEFINITE);
@@ -53,6 +40,7 @@ public class Driver extends Application{
 		
 		theStage.setScene(theScene);
 		theStage.sizeToScene();
+		theStage.setResizable(false);
 		theStage.show();	
 	}
 	

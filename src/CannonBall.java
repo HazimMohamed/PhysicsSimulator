@@ -1,46 +1,43 @@
 import java.util.ArrayList;
 
-public class CannonBall implements Collidable{
-	static final double cannonBallRadius = 20;
-	static final double cannonBallBounciness = 0.8;
-	static final double cannonBallFrictionCoeficient = 0.2;
-	static final double cannonBallMass = 5;
-	static final double velocityBounceThreshold = 2.5;
-	
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
+
+public class CannonBall implements Physical, Collidable, Drawable{
+	private static final double cannonBallRadius = 20;
+	private static final double cannonBallBounciness = 0.8;
+	private static final double cannonBallFrictionCoeficient = 1;
+	private static final double cannonBallMass = 5;
+		
+	private Vector2 previousPosition;
 	private Vector2 position;
 	private Vector2 velocity;
 	private Vector2 acceleration;
 	
-	private ArrayList<Vector2> constantForces;
-	private ArrayList<Vector2> impulseForces;
+	private ArrayList<Vector2> forces;
 	
-	UpdateFrame updateFrame;
+	GraphicsContext gc;
 	
+	CircleCollider collider;
+
 	public CannonBall(Vector2 startPosition) {
 		position = startPosition;
 		velocity = Vector2.zero;
 		acceleration = Vector2.zero;
 		
-		constantForces = new ArrayList<Vector2>(0);
-		impulseForces = new ArrayList<Vector2>(0);
+		collider = new CircleCollider(this, Vector2.zero, cannonBallRadius);
+		
+		forces = new ArrayList<Vector2>(0);
 	}
 	
-	public void addImpulseForce(Vector2 force) {
-		impulseForces.add(force);
+	public void addForce(Vector2 force) {
+		forces.add(force);
 	}
 	
-	public void addConstantForce(Vector2 force) {
-		constantForces.add(force);
-	}
-	
-	public Vector2 updatePosition() {		
+	public void updatePosition() {		
 		Vector2 netForce = Vector2.zero;
 		
-		for(Vector2 force: constantForces) {
-			netForce = netForce.add(force);
-		}
-		
-		for(Vector2 force: impulseForces) {
+		for(Vector2 force: forces) {
 			netForce = netForce.add(force);
 		}
 		
@@ -48,26 +45,24 @@ public class CannonBall implements Collidable{
 		
 		velocity = velocity.add(acceleration);
 		
-		this.position = position.add(velocity);
+		previousPosition = position;
 		
-		stayInBounds();
+		position = position.add(velocity);
 		
-		impulseForces.clear();
-		constantForces.clear();	
-		
-		return position;
+		forces.clear();	
 	}
-	
-	private void stayInBounds() {
-		if(position.x + CannonBall.cannonBallRadius > Driver.canvasWidth) {
-			this.position.x = Driver.canvasWidth + 0.01 - CannonBall.cannonBallRadius;
-		}
-		if(position.x - CannonBall.cannonBallRadius < 0){
-			this.position.x = CannonBall.cannonBallRadius - 0.01;
-		}
-		if(position.y + CannonBall.cannonBallRadius > Driver.canvasHeight) {
-			this.position.y = Driver.canvasHeight + 0.01 - CannonBall.cannonBallRadius;
-		}
+
+	public void setPosition(Vector2 a) {
+		this.position = a;
+	}
+
+	public void draw(GraphicsContext gc) {
+		gc.setFill(Color.RED);
+		gc.fillOval(position.x,
+					position.y, 
+					cannonBallRadius, 
+					cannonBallRadius
+		);
 	}
 	
 	public Vector2 getPosition() {
@@ -82,19 +77,35 @@ public class CannonBall implements Collidable{
 		return acceleration;
 	}
 	
-	public ArrayList<Vector2> getConstantForces() {
-		return constantForces;
+	public ArrayList<Vector2> getForces() {
+		return forces;
 	}
 
 	public double getMass() {
 		return cannonBallMass;
 	}
 	
-	public void translate(Vector2 v) {
-		position = position.add(v);
-	}
-
+	
 	public double getCoeficientOfFriction() {
 		return cannonBallFrictionCoeficient;
+	}
+
+	@Override
+	public Collider getCollider() {
+		return collider;
+	}
+
+	@Override
+	public Vector2 getPreviousPosition() {
+		return previousPosition;
+	}
+
+	public boolean isImmobile() {
+		return false;
+	}
+
+	@Override
+	public double getBounciness() {
+		return cannonBallBounciness;
 	}
 }
